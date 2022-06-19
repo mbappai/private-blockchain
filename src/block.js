@@ -47,7 +47,8 @@ class Block {
             if(currentBlockHash !== recalculatedBlockHash){
                 reject(Error("Current block has been tampered with"))
             }else{
-                resolve("Block is intact and good to go")
+                console.log("Block is intact and good to go")
+                resolve(true)
             }
 
             // Returning the Block is not valid

@@ -58,7 +58,7 @@ class Blockchain {
      * or reject if an error happen during the execution.
      * You will need to check for the height to assign the `previousBlockHash`,
      * assign the `timestamp` and the correct `height`...At the end you need to 
-     * create the `block hash` and push the block into the chain array. Don't for get 
+     * create the `block hash` and push the block into the chain array. Don't forget 
      * to update the `this.height`
      * Note: the symbol `_` in the method name indicates in the javascript convention 
      * that this method is a private method. 
@@ -72,6 +72,7 @@ class Blockchain {
             }
 
             if(self.height > 0){
+                // set previous hash if block height is greater than 0
                 block.previousBlockHash = self.chain[self.chain.length-1].hash;
             }
             console.log(block.height)
