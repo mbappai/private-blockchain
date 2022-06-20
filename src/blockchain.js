@@ -113,9 +113,9 @@ class Blockchain {
                 let keyPair = bitcoin.ECPair.fromWIF(address);
                 let privateKey = keyPair.privateKey
 
-                let signature = bitcoinMessage.sign(message, privateKey, keyPair.compressed, { segwitType: 'p2wpkh' })
-                console.log(signature)
-                resolve(signature)
+                let signature = bitcoinMessage.sign(message, privateKey, keyPair.compressed)
+                console.log(signature.toString('base64'))
+                resolve(signature.toString('base64'))
             }else{
                 reject(Error('Please provide all parameters'))
             }
@@ -165,11 +165,13 @@ class Blockchain {
                         signature,
                         star
                     }
-                    let block = new BlockClass.Block({data:starObject});
+                    // store starObject in a block
+                    let block = new BlockClass.Block(starObject);
                     console.log(block)
+                    // add newly created block (starObject) in the chain array
                     let newBlock = await self._addBlock(block)
-                    resolve(newBlock)
                     //resolve with the created block
+                    resolve(newBlock)
                 }
                 reject(Error('Problem occured while veryfying address'))
             }

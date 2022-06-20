@@ -59,13 +59,19 @@ class BlockchainController {
             if(req.body.address && req.body.message) {
                 const address = req.body.address;
                 const message = req.body.message;
-                let signature = await this.blockchain.signMessage(address,message);
-                if(message){
-                    return res.status(200).json(signature);
-                } else {
-                    return res.status(500).send("An error happened!");
+                try{
+                    let signature = await this.blockchain.signMessage(address,message);
+                    if(message){
+                        return res.status(200).json(signature);
+                    } else {
+                        return res.status(500).send("An error happened!");
+                    }
+                }catch(err){
+                    console.log('Error while signing',err)
+                    return res.status(500).send(err);
                 }
             } else {
+                
                 return res.status(500).send("Check the Body Parameter!");
             }
         });
