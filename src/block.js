@@ -38,11 +38,16 @@ class Block {
     validate() {
         let self = this;
         return new Promise((resolve, reject) => {
+            // return true for genesis block
+            if(self.height == 1) resolve(true);
             // Save in auxiliary variable the current block hash
             const currentBlockHash = self.hash;
-                                            
+            console.log('currentBlockHash: ', currentBlockHash)
+            // clone block without it's hash
+            const clonedCurrentBlock = {...self,hash:null};                           
             // Recalculate the hash of the Block
-            const recalculatedBlockHash = SHA256(JSON.stringify(self));
+            const recalculatedBlockHash = SHA256(JSON.stringify(clonedCurrentBlock)).toString();
+            console.log('recalculatedBlockHash: ', recalculatedBlockHash)
             // Comparing if the hashes changed
             if(currentBlockHash !== recalculatedBlockHash){
                 reject(Error("Current block has been tampered with"))
@@ -77,7 +82,7 @@ class Block {
         const dataObject = JSON.parse(decodedBlockData);
 
         return new Promise((resolve,reject)=>{
-            if(self.height !== 0){
+            if(self.height != 0){
                 resolve(dataObject)
             }else{
                 reject(Error('This is a genesis block'));

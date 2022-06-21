@@ -75,11 +75,10 @@ class Blockchain {
                 // set previous hash if block height is greater than 0
                 block.previousBlockHash = self.chain[self.chain.length-1].hash;
             }
-            console.log(block.height)
 
             block.time = new Date().getTime().toString().slice(0,-3);
-            block.hash = SHA256(JSON.stringify(block)).toString();
             block.height = self.chain.length ;
+            block.hash = SHA256(JSON.stringify(block)).toString();
             self.chain.push(block);
             resolve(block)
     
@@ -152,9 +151,8 @@ class Blockchain {
 
             if(timeDifference < 300){
 
-                let checkSegwitAlways = true;
                 let messagePrefix = "";
-                let isVerified = bitcoinMessage.verify(message,address,signature,messagePrefix,checkSegwitAlways);
+                let isVerified = bitcoinMessage.verify(message,address,signature,messagePrefix);
 
                 // console.log(isVerified)
                 if(isVerified){
@@ -167,14 +165,19 @@ class Blockchain {
                     }
                     // store starObject in a block
                     let block = new BlockClass.Block(starObject);
-                    console.log(block)
                     // add newly created block (starObject) in the chain array
                     let newBlock = await self._addBlock(block)
-                    //resolve with the created block
-                    resolve(newBlock)
+                    // validate chain after block is added
+                    const isBlockValid = await block.validate();
+                    console.log(isBlockValid)
+                    if(isBlockValid){
+                        //resolve with the created block
+                        resolve(newBlock)
+                    }
                 }
                 reject(Error('Problem occured while veryfying address'))
             }
+            reject(Error('TIME ELAPSED: Make sure you submit a star within 5 mins after message signing'))
 
 
         });
@@ -223,12 +226,14 @@ class Blockchain {
     getStarsByWalletAddress (address) {
         let self = this;
         let stars = [];
-        return new Promise((resolve, reject) => {
-            for(block in self.chain){
+        return new Promise(async(resolve, reject) => {
+            for(let block of self.chain){
                 //decode data before accessing.
-                let decodedBlock = JSON.parse(Buffer.from(block.data,'hex'))
-                if(decodedBlock.data.address === address){
-                    stars.push(block.data.star);
+                let decodedBlock = JSON.parse(Buffer.from(block.body,'hex'))
+                // let decodedBlock = await block.getBData()
+
+                if(decodedBlock.address === address){
+                    stars.push(decodedBlock.star);
                 }
             }
             resolve(stars)
