@@ -168,14 +168,14 @@ class Blockchain {
                     // add newly created block (starObject) in the chain array
                     let newBlock = await self._addBlock(block)
                     // validate chain after block is added
-                    const isBlockValid = await block.validate();
-                    console.log(isBlockValid)
-                    if(isBlockValid){
+                    // const isBlockValid = await self.validateChain();
+                    // console.log(isBlockValid)
+                    // if(isBlockValid){
                         //resolve with the created block
                         resolve(newBlock)
-                    }
+                    // }
                 }
-                reject(Error('Problem occured while veryfying address'))
+                reject(Error('Problem occured while verifying address'))
             }
             reject(Error('TIME ELAPSED: Make sure you submit a star within 5 mins after message signing'))
 
@@ -250,19 +250,67 @@ class Blockchain {
         let self = this;
         let errorLog = [];
         return new Promise(async (resolve, reject) => {
-            for(let i=0; i <= self.chain.length; i++){
-                  
-                await block.validate();
+            
+            if( await self.getChainHeight() < 2) resolve('Chain is too short to validate')
 
-                   if(self.getChainHeight() > 0){
-                       let previousBlockHash = self.chain[i-1].hash;
-                       let currentBlockHash = self.chain[i].hash;
-                       let areHashesEqual = previousBlockHash === currentBlockHash;
-                       if(!areHashesEqual) errorLog.push('There is a problem with the block')
-                    }
+            for(let i=2; i<self.chain.length; i++){
+
+                try{
+
+                    // validate two blocks
+                    await self.chain[i].validate()
+                    await self.chain[i-1].validate()
+                }catch(err){
+                    console.log(err)
+                    // errorLog.push(`DANGER: Block ${self.chain[i].height} has been tampered with`)
+                }
+                
+                 // get previousHash of current block and currentHash of previous block
+                 let currentBlockPreviousHash = self.chain[i].previousBlockHash;
+                 let previousBlockCurrentHash = self.chain[i-1].hash;
+
+                 // compare hashes
+                 if(currentBlockPreviousHash === previousBlockCurrentHash){
+                     errorLog.push(`Blocks ${self.chain[i-1].height} & ${self.chain[i].height} are consistent`);
+                 }else{
+                     errorLog.push(`Block ${self.chain[i-1].height} has been tampered with`)
+                     errorLog.push('Resolve chain');
+                     resolve(errorLog)
+                 }
+
 
             }
-        });
+            resolve(errorLog)
+            // console.log(self.chain.length)
+            // for(let i=1; i <= self.chain.length; i++){
+                  
+            //         // only proceed to check previousHash of the succeeding block if the current block hasn't been tampered with
+            //         //    const isBlockValidated = await self.chain[i].validate();
+            //            let hashesAreEqual = previousBlockCurrentHash === currentBlockPreviousHash;
+            //            if(!hashesAreEqual) {
+            //                errorLog.push(`There is a problem with block ${i}`)
+            //                errorLog.push(`Revalidate chain starting from block ${i}`)
+            //                break;
+            //             }
+            //         }
+            //         // if(errorLog.length>0) {
+                        //     console.log(errorLog);
+                        //     reject(errorLog)
+                        // }
+                        // console.log('Blockchain is secured!!!')
+                    
+                    });
+    }
+
+    tamperBlockchain(data){
+        let self = this;
+        return new Promise(async(resolve,reject)=>{
+            // tamper with chain at block 2
+            self.chain[2].body = Buffer.from(JSON.stringify(data)).toString('hex');
+            self.chain[2].time = new Date().getTime().toString().slice(0,-3);
+            self.chain[2].hash = SHA256(JSON.stringify(data)).toString();
+            resolve(self.chain[2])
+        })
     }
 
 }

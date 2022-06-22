@@ -17,6 +17,8 @@ class BlockchainController {
         this.submitStar();
         this.getBlockByHash();
         this.getStarsByOwner();
+        this.tamperBlockchain();
+        this.validateChain();
     }
 
     // Enpoint to Get a Block by Height (GET Endpoint)
@@ -138,6 +140,49 @@ class BlockchainController {
             } else {
                 return res.status(500).send("Block Not Found! Review the Parameters!");
             }
+            
+        });
+    }
+
+    // Endpoint to tamper with block at index 1 on the chain (POST endpoint)
+    tamperBlockchain() {
+        this.app.post("/tamperBlock", async (req, res) => {
+            if(req.body.data) {
+                const data = req.body.data;
+
+                try {
+                    let block = await this.blockchain.tamperBlockchain(data);
+                    if(block){
+                        return res.status(200).json(block);
+                    } else {
+                        return res.status(500).send("An error happened!");
+                    }
+                } catch (error) {
+                    return res.status(500).send(error);
+                }
+            } else {
+                return res.status(500).send("Check the Body Parameter!");
+            }
+        });
+    }
+
+    
+    // This endpoint allows you to request the list of Stars registered by an owner
+    validateChain() {
+        this.app.get("/validateChain", async (req, res) => {
+                    
+                try {
+                    let logs = await this.blockchain.validateChain();
+                    console.log(logs)
+                    if(logs){
+                        return res.status(200).json(logs);
+                    } else {
+                        return res.status(404).send("Block Not Found!");
+                    }
+                } catch (error) {
+                    return res.status(500).send("An error happened!");
+                }
+            
             
         });
     }

@@ -42,23 +42,18 @@ class Block {
             if(self.height == 1) resolve(true);
             // Save in auxiliary variable the current block hash
             const currentBlockHash = self.hash;
-            console.log('currentBlockHash: ', currentBlockHash)
             // clone block without it's hash
             const clonedCurrentBlock = {...self,hash:null};                           
             // Recalculate the hash of the Block
             const recalculatedBlockHash = SHA256(JSON.stringify(clonedCurrentBlock)).toString();
-            console.log('recalculatedBlockHash: ', recalculatedBlockHash)
             // Comparing if the hashes changed
             if(currentBlockHash !== recalculatedBlockHash){
-                reject(Error("Current block has been tampered with"))
+                console.log(`DANGER: Block ${self.height} has been tampered with.`)
+                reject(false)
             }else{
                 console.log("Block is intact and good to go")
                 resolve(true)
             }
-
-            // Returning the Block is not valid
-            
-            // Returning the Block is valid
 
         });
     }
