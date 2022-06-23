@@ -80,6 +80,7 @@ class Blockchain {
             block.height = self.chain.length ;
             block.hash = SHA256(JSON.stringify(block)).toString();
             self.chain.push(block);
+
             resolve(block)
     
             self.height++;
@@ -106,10 +107,10 @@ class Blockchain {
         });
     }
 
-    signMessage(address, message){
+    signMessage(_privateKey, message){
         return new Promise((resolve,reject)=>{
-            if(address && message){
-                let keyPair = bitcoin.ECPair.fromWIF(address);
+            if(_privateKey && message){
+                let keyPair = bitcoin.ECPair.fromWIF(_privateKey);
                 let privateKey = keyPair.privateKey
 
                 let signature = bitcoinMessage.sign(message, privateKey, keyPair.compressed)

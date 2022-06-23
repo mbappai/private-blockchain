@@ -58,11 +58,11 @@ class BlockchainController {
      // Endpoint that allows user to sign messages (POST Endpoint)
      signMessage() {
         this.app.post("/signMessage", async (req, res) => {
-            if(req.body.address && req.body.message) {
-                const address = req.body.address;
+            if(req.body.privateKey && req.body.message) {
+                const privateKey = req.body.privateKey;
                 const message = req.body.message;
                 try{
-                    let signature = await this.blockchain.signMessage(address,message);
+                    let signature = await this.blockchain.signMessage(privateKey,message);
                     if(message){
                         return res.status(200).json(signature);
                     } else {
@@ -144,7 +144,7 @@ class BlockchainController {
         });
     }
 
-    // Endpoint to tamper with block at index 1 on the chain (POST endpoint)
+    // Endpoint to tamper with a block on the chain (POST endpoint)
     tamperBlockchain() {
         this.app.post("/tamperBlock", async (req, res) => {
             if(req.body.data) {
