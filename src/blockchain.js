@@ -79,11 +79,28 @@ class Blockchain {
             block.time = new Date().getTime().toString().slice(0,-3);
             block.height = self.chain.length ;
             block.hash = SHA256(JSON.stringify(block)).toString();
-            self.chain.push(block);
+
+
+                    // if block is not genesis; validate before adding to block
+
+                    //validate chain before adding blocks
+                    const errorLog = await self.validateChain();
+                    // proceed only when there is no errorLog
+                    if( errorLog.length === 0){
+                        
+                        // add block and update chain height
+                        self.chain.push(block);
+                        self.height++;
+
+                    }else{
+                        console.log('New block cannot be added because chain is defective')
+                        console.log(errorLog)
+                    }
+
+                
 
             resolve(block)
     
-            self.height++;
            
         });
     }
@@ -168,13 +185,8 @@ class Blockchain {
                     let block = new BlockClass.Block(starObject);
                     // add newly created block (starObject) in the chain array
                     let newBlock = await self._addBlock(block)
-                    // validate chain after block is added
-                    // const isBlockValid = await self.validateChain();
-                    // console.log(isBlockValid)
-                    // if(isBlockValid){
                         //resolve with the created block
                         resolve(newBlock)
-                    // }
                 }
                 reject(Error('Problem occured while verifying address'))
             }
@@ -251,54 +263,30 @@ class Blockchain {
         let self = this;
         let errorLog = [];
         return new Promise(async (resolve, reject) => {
-            
-            if( await self.getChainHeight() < 2) resolve('Chain is too short to validate')
 
-            for(let i=2; i<self.chain.length; i++){
+
+            // WE CAN ONLY START VALIDATING CHAIN AFTER THE GENESIS BLOCK
+            // HAS BEEN ADDED, HENCE THE CONDITION BELOW.
+            if(self.chain.length === 0) resolve([])
+
+            for(let i=0; i<self.chain.length; i++){
 
                 try{
-
                     // validate two blocks
                     await self.chain[i].validate()
-                    await self.chain[i-1].validate()
                 }catch(err){
-                    console.log(err)
-                    // errorLog.push(`DANGER: Block ${self.chain[i].height} has been tampered with`)
+                    errorLog.push(`DANGER: Block ${self.chain[i].height} has been tampered with`)
                 }
                 
-                 // get previousHash of current block and currentHash of previous block
-                 let currentBlockPreviousHash = self.chain[i].previousBlockHash;
-                 let previousBlockCurrentHash = self.chain[i-1].hash;
 
                  // compare hashes
-                 if(currentBlockPreviousHash === previousBlockCurrentHash){
-                     errorLog.push(`Blocks ${self.chain[i-1].height} & ${self.chain[i].height} are consistent`);
-                 }else{
-                     errorLog.push(`Block ${self.chain[i-1].height} has been tampered with`)
-                     errorLog.push('Resolve chain');
-                     resolve(errorLog)
+                 if(i>0 && self.chain[i].previousBlockHash != self.chain[i-1].hash){
+                     errorLog.push(self.chain[i-1]);
                  }
 
 
             }
             resolve(errorLog)
-            // console.log(self.chain.length)
-            // for(let i=1; i <= self.chain.length; i++){
-                  
-            //         // only proceed to check previousHash of the succeeding block if the current block hasn't been tampered with
-            //         //    const isBlockValidated = await self.chain[i].validate();
-            //            let hashesAreEqual = previousBlockCurrentHash === currentBlockPreviousHash;
-            //            if(!hashesAreEqual) {
-            //                errorLog.push(`There is a problem with block ${i}`)
-            //                errorLog.push(`Revalidate chain starting from block ${i}`)
-            //                break;
-            //             }
-            //         }
-            //         // if(errorLog.length>0) {
-                        //     console.log(errorLog);
-                        //     reject(errorLog)
-                        // }
-                        // console.log('Blockchain is secured!!!')
                     
                     });
     }

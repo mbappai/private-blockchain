@@ -172,10 +172,10 @@ class BlockchainController {
         this.app.get("/validateChain", async (req, res) => {
                     
                 try {
-                    let logs = await this.blockchain.validateChain();
-                    console.log(logs)
-                    if(logs){
-                        return res.status(200).json(logs);
+                    let log = await this.blockchain.validateChain();
+                    console.log(log)
+                    if(log){
+                        return res.status(200).json(log);
                     } else {
                         return res.status(404).send("Block Not Found!");
                     }
