@@ -71,7 +71,7 @@ class Blockchain {
                 reject(Error('No new block to add'))
             }
 
-            if(self.height > 0){
+            if(self.height >= 0){
                 // set previous hash if block height is greater than 0
                 block.previousBlockHash = self.chain[self.chain.length-1].hash;
             }
