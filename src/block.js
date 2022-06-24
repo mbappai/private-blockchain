@@ -39,7 +39,7 @@ class Block {
         let self = this;
         return new Promise((resolve, reject) => {
             // return true for genesis block
-            if(self.height == 1) resolve(true);
+            if(self.height == -1) resolve(true);
             // Save in auxiliary variable the current block hash
             const currentBlockHash = self.hash;
             // clone block without it's hash
